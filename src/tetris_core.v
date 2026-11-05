@@ -67,7 +67,7 @@ output reg[15:0]score
     reg[19:0]row_i;
     begin
       collide=1'b0;
-      if(b_x>5'd9)begin
+      if(b_x>5'd15)begin
         collide=1'b1;
       end else begin
       for(i=0;i<4;i=i+1)begin
