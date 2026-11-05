@@ -58,7 +58,7 @@ output reg[15:0]score
     .rot      (rot_nx),
     .mask     (mask_try)
   );
-
+ //b_x is biased by+2
   function automatic collide;
     input[4:0]b_x;
     input[4:0]b_y;
@@ -76,9 +76,11 @@ output reg[15:0]score
         if(row_i!=20'd0)begin
         if((b_y + i)>19)
         collide=1'd1;
-        else if(row_i>20'h03FF)
+        else if(row_i[1:0]!=2'b00)
         collide=1'b1;
-        else if((row_i[9:0]&field_occ[b_y+i])!=10'b0)
+        else if(row_i>20'h00FFC)
+        collide=1'b1;
+        else if((row_i[11:2]&field_occ[b_y+i])!=10'b0)
         collide=1'b1;
         end
       end
@@ -160,9 +162,9 @@ output reg[15:0]score
           for(j=0;j<4;j=j+1)begin
             row_j={16'd0,p_mask[j*4 +: 4]};
             row_j=row_j<<p_x;
-            if((p_y+j<=19)&&(row_j<=20'h03FF))begin
-              field_occ[p_y+j]<=field_occ[p_y+j] | row_j[9:0];
-              field_type[p_y+j]<=field_type[p_y+j]|type_expand(row_j[9:0] /* logic[9:0] */, p_type /* logic[2:0] */);
+            if((p_y+j<=19)&&(row_j<=20'h00FFC)&&(row_j[1:0]==2'b00))begin
+              field_occ[p_y+j]<=field_occ[p_y+j] | row_j[11:2];
+              field_type[p_y+j]<=field_type[p_y+j]|type_expand(row_j[11:2] /* logic[9:0] */, p_type /* logic[2:0] */);
             end
           end
   end
@@ -172,14 +174,14 @@ output reg[15:0]score
   begin
           p_type<=next_type;
           p_rot<=2'b0;
-          p_x<=5'd3;
+          p_x<=5'd5;
           p_y<=5'd0;
           next_type<=pr_type;
           pr_spawn<=1'b1;
           grav_cnt<=8'd0;
           lock_cnt<=5'd0;
           phase<=P_FALL;
-          if(collide(5'd3, 5'd0 /* logic[4:0] */, next_mask /* logic[15:0] */)) game_over<=1'b1;
+          if(collide(5'd5, 5'd0 /* logic[4:0] */, next_mask /* logic[15:0] */)) game_over<=1'b1;
   end
   endtask
 
@@ -206,7 +208,7 @@ endgenerate
         end
         p_type  <=3'd0;
         p_rot   <=2'd0;
-        p_x     <=5'd3;
+        p_x     <=5'd5;
         p_y     <=5'd0;
         next_type<=3'd0;
         pr_spawn<=1'b0;
@@ -236,7 +238,7 @@ endgenerate
         end
         p_type  <=3'd0;
         p_rot   <=2'd0;
-        p_x     <=5'd3;
+        p_x     <=5'd5;
         p_y     <=5'd0;
         next_type<=3'd0;
         pr_spawn<=1'b0;
@@ -409,6 +411,4 @@ endgenerate
     end
   end
   end
-
-
 endmodule

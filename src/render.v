@@ -37,7 +37,7 @@ output reg[3:0]color_idx
 
     wire [5:0]drow,dcol;
     assign drow={1'b0,row_idx}-{1'b0,p_y};
-    assign dcol={1'b0,col_idx}-{1'b0,p_x};
+    assign dcol={1'b0,col_idx}-{1'b0,p_x}+6'd2;
     wire inbox;
     assign inbox=(drow<=6'd3)&&(dcol<=6'd3);
     assign hit_piece=inbox && shape_mask[{drow[1:0],dcol[1:0]}];
