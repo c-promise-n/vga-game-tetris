@@ -6,6 +6,7 @@ input rst_n,
 input frame_tick,
 
 input [7:0]key_edge,
+input [7:0]key_pressed,
 input move_left,
 input move_right,
 
@@ -112,7 +113,7 @@ output reg[15:0]score
   assign restart_paulse=key_edge[6];
   assign pause_pulse=key_edge[5];
   assign drop=key_edge[4];
-  assign down=key_edge[2];
+  assign down=key_pressed[2];
   wire rotate;
   assign rotate=key_edge[3];
   always @(posedge clk or negedge rst_n) begin
@@ -195,6 +196,8 @@ wire [19:0]full_now;
 reg [19:0] full_lat;
 reg [2:0]lc_n;
 genvar gi;
+reg [4:0]pre_cnt;
+reg     pre_done;
 generate
   for(gi=0;gi<20;gi=gi+1)begin:g_full
     assign full_now[gi]={field_occ[gi]==10'h3FF};
@@ -216,6 +219,8 @@ endgenerate
         lc_issued<=1'd0;
         grav_cnt<=8'b0;
         game_over<=1'b0;
+        pre_cnt<=5'd0;
+        pre_done<=1'd0;
         phase<=P_FALL;
         lc_start<=1'b0;
         lc_done<=1'b0;
@@ -246,6 +251,8 @@ endgenerate
         lc_issued<=1'd0;
         grav_cnt<=8'b0;
         game_over<=1'b0;
+        pre_cnt<=5'd0;
+        pre_done<=1'd0;
         phase<=P_FALL;
         lc_start<=1'b0;
         lc_done<=1'b0;
@@ -256,7 +263,21 @@ endgenerate
         lc_issued<=1'b0;
         score<=16'b0;
       end else begin
+        if(!pre_done&&!start_paulse)begin
+          if(pre_cnt==5'd8)begin
+            p_type<=pr_type;
+            pr_spawn<=1'b1;
+          end else if(pre_cnt==5'd20)begin
+            next_type<=pr_type;
+            pre_done<=1'b1;
+          end
+          pre_cnt<=pre_cnt+1'b1;
+        end
 
+        if(start_paulse)begin
+        pre_cnt<=5'd0;
+        pre_done<=1'd0;
+        end
 
       if(piece_active && move_left && !move_right)begin
         if(!collide(p_x-5'd1 /* logic[4:0] */, p_y /* logic[4:0] */, p_mask /* logic[15:0] */))begin

@@ -135,6 +135,7 @@ module top_tetris (
         .rst_n        (rst_n),
         .frame_tick   (frame_tick),
         .key_edge     (key_edge),
+        .key_pressed    (key_pressed),
         .move_left    (move_left),
         .move_right   (move_right),
         .row_idx      (row_idx),
