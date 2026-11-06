@@ -75,6 +75,7 @@ module top_tetris (
     );
 
     wire [8:0] px_log = px[9:1];
+    wire [8:0] py_log = py[9:1];
 
     //------------------------------------------------------------------
     // cell coordinates
@@ -129,6 +130,9 @@ module top_tetris (
     wire [4:0]  p_x, p_y;
     wire [15:0] p_mask, next_mask;
     wire [15:0] score;
+    wire st_idle,st_pause,st_over;
+    wire [2:0]level;
+    wire [6:0]lines;
 
     tetris_core u_core (
         .clk          (clk),
@@ -148,7 +152,12 @@ module top_tetris (
         .p_mask       (p_mask),
         .next_type    (next_type),
         .next_mask    (next_mask),
-        .score        (score)
+        .score        (score),
+        .st_idle       (st_idle),
+        .st_pause       (st_pause),
+        .st_over        (st_over),
+        .level          (level),
+        .lines          (lines)
     );
 
     //------------------------------------------------------------------
@@ -169,6 +178,19 @@ module top_tetris (
         .field_occ_row  (field_occ_row),
         .field_type_row (field_type_row),
         .color_idx      (color_idx)
+    );
+
+    localparam [3:0]COL_TEXT=4'h9;
+    wire text_px,dim;
+
+    fontlay u_fontlay(
+        .st_idle        (st_idle),
+        .st_pause       (st_pause),
+        .st_over        (st_over),
+        .px_log         (px_log),
+        .py_log         (py_log),
+        .text_px        (text_px),
+        .dim            (dim)
     );
 
     wire [11:0] rgb_game;
@@ -208,7 +230,8 @@ module top_tetris (
         .rgb_i   (rgb),
         .hsync_o (vga_hs),
         .vsync_o (vga_vs),
-        .rgb_o   (rgb_o)
+        .rgb_o   (rgb_o),
+        .dim     (dim)
     );
 
     assign vga_r = rgb_o[11:8];
