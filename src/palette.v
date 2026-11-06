@@ -7,7 +7,7 @@ module palette(
     always @(*) begin
         case(index)
         4'h0:rgb={{4'h0},{4'h0},{4'h2}};//background
-        4'h1:rgb={{4'h1},{4'h1},{4'h3}};//grid lines
+        4'h1:rgb={{4'h3},{4'h3},{4'h6}};//grid lines
         4'h2:rgb={{4'h0},{4'hE},{4'hE}};//cyan:I
         4'h3:rgb={{4'hF},{4'hE},{4'h0}};//yellow:O
         4'h4:rgb={{4'hC},{4'h0},{4'hE}};//purple:T

@@ -24,7 +24,12 @@ output reg[2:0]next_type,
 output wire[15:0]next_mask,
 
 
-output reg[15:0]score
+output reg[15:0]score,
+
+output st_idle,
+output st_pause,
+output st_over
+
   );
 
   shape_rom u_shape_rom (
@@ -270,6 +275,7 @@ endgenerate
           end else if(pre_cnt==5'd20)begin
             next_type<=pr_type;
             pre_done<=1'b1;
+            pr_spawn<=1'b1;
           end
           pre_cnt<=pre_cnt+1'b1;
         end
@@ -432,4 +438,7 @@ endgenerate
     end
   end
   end
+  assign st_idle=(cur_state==IDLE);
+  assign st_pause=(cur_state==PAUSE);
+  assign st_over=(cur_state==OVER);
 endmodule
