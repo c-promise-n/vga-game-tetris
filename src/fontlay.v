@@ -38,18 +38,18 @@ output dim
     always @(*) begin
         msg_show=1'b1;
         if(st_idle)begin//start
-            msg_col_start<=6'd18;
-            msg_len<=6'd5;
+            msg_col_start=6'd18;
+            msg_len=6'd5;
         end else if(st_pause)begin//pause
-            msg_col_start<=6'd18;
-            msg_len<=6'd5;
+            msg_col_start=6'd18;
+            msg_len=6'd5;
         end else if(st_over)begin//game over
-            msg_col_start<=6'd16;
-            msg_len<=6'd9;
+            msg_col_start=6'd16;
+            msg_len=6'd9;
         end else begin
-            msg_col_start<=6'd0;
-            msg_len<=6'd0;
-            msg_show<=1'd0;
+            msg_col_start=6'd0;
+            msg_len=6'd0;
+            msg_show=1'd0;
         end
     end
 wire in_msg_row = (char_row==MSG_ROW);

@@ -25,6 +25,8 @@ output wire[15:0]next_mask,
 
 
 output reg[15:0]score,
+output reg [2:0]level,
+output reg [6:0]lines,
 
 output st_idle,
 output st_pause,
@@ -150,8 +152,13 @@ output st_over
 
   reg[19:0]row_j;
   assign landed=collide(p_x, p_y +5'd1/* logic[4:0] */, p_mask /* logic[15:0] */);
+  wire [7:0]grave_level[4:0];
+  assign grave_level[0]=8'd30;
+  assign grave_level[1]=8'd40;
+  assign grave_level[2]=8'd50;
+  assign grave_level[3]=8'd60;
 
- localparam GRAV =8'd30;
+  wire [7:0]GRAV =grave_level[level];
  reg [7:0]grav_cnt;
 
  localparam P_FALL = 2'd0,P_TOUCH=2'd1,P_DROP=2'd2,P_SETTLE=2'd3;
@@ -223,6 +230,8 @@ endgenerate
         lock_cnt<=5'd0;
         lc_issued<=1'd0;
         grav_cnt<=8'b0;
+        level<=3'd0;
+        lines<=7'd0;
         game_over<=1'b0;
         pre_cnt<=5'd0;
         pre_done<=1'd0;
@@ -255,6 +264,8 @@ endgenerate
         lock_cnt<=5'd0;
         lc_issued<=1'd0;
         grav_cnt<=8'b0;
+        level<=3'd0;
+        lines<=7'd0;
         game_over<=1'b0;
         pre_cnt<=5'd0;
         pre_done<=1'd0;
@@ -390,12 +401,36 @@ endgenerate
 
       if(lc_done)begin
         case (lc_n)
-          3'd1:score<=score+16'd100;
-          3'd2:score<=score+16'd300;
-          3'd3:score<=score+16'd500;
-          3'd4:score<=score+16'd800;
-          default: score<=score;
+          3'd1:begin
+            score<=score+16'd10;
+            lines<=lines+7'd1;
+            end
+          3'd2:begin
+            score<=score+16'd30;
+            lines<=lines+7'd2;
+            end
+          3'd3:begin
+            score<=score+16'd60;
+            lines<=lines+7'd3;
+          end
+          3'd4:begin
+            score<=score+16'd100;
+            lines<=lines+7'd4;
+          end
+          default:begin
+            score<=score;
+            lines<=lines;
+          end
         endcase
+          if(lines<10)begin
+            level<=3'b0;
+          end else if(lines<20)begin
+            level<=3'b1;
+          end else if(lines<30)begin
+            level<=3'd2;
+          end else begin
+            level<=3'd3;
+          end
         do_spawn;
         lc_issued<=1'b0;
       end
