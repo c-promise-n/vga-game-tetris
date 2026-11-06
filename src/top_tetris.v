@@ -192,10 +192,10 @@ module top_tetris (
         .text_px        (text_px),
         .dim            (dim)
     );
-
+    wire [3:0]color_idx_final=text_px?COL_TEXT:color_idx;
     wire [11:0] rgb_game;
     palette u_pal (
-        .index (color_idx),
+        .index (color_idx_final),
         .rgb   (rgb_game)
     );
 

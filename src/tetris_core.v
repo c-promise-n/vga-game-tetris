@@ -152,11 +152,12 @@ output st_over
 
   reg[19:0]row_j;
   assign landed=collide(p_x, p_y +5'd1/* logic[4:0] */, p_mask /* logic[15:0] */);
-  wire [7:0]grave_level[4:0];
+  wire [7:0]grave_level[3
+  :0];
   assign grave_level[0]=8'd30;
-  assign grave_level[1]=8'd40;
-  assign grave_level[2]=8'd50;
-  assign grave_level[3]=8'd60;
+  assign grave_level[1]=8'd22;
+  assign grave_level[2]=8'd16;
+  assign grave_level[3]=8'd10;
 
   wire [7:0]GRAV =grave_level[level];
  reg [7:0]grav_cnt;
@@ -422,11 +423,11 @@ endgenerate
             lines<=lines;
           end
         endcase
-          if(lines<10)begin
+          if(lines<9)begin
             level<=3'b0;
-          end else if(lines<20)begin
+          end else if(lines<19)begin
             level<=3'b1;
-          end else if(lines<30)begin
+          end else if(lines<29)begin
             level<=3'd2;
           end else begin
             level<=3'd3;
