@@ -244,7 +244,7 @@ module top_tetris (
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n)                 st_act <= 21'd0;
-        else if (any_edge)          st_act <= 21'd10_000_000;
+        else if (any_edge)          st_act <= 21'd10_000_00;
         else if (st_act != 21'd0)   st_act <= st_act - 21'd1;
     end
 
