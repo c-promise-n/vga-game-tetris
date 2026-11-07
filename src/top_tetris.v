@@ -1,13 +1,6 @@
 `timescale 1ns / 1ps
 //======================================================================
 // top_tetris - board top level for the integrated game
-//
-// Instantiates, from left to right:
-//   vga_timing -> cell_map -> render -> palette -> pixel_pipe   (video)
-//   input_subsystem                                            (input)
-//   tetris_core                                                (game)
-//   score_display                                              (7-seg)
-//
 // Control mapping (must match input_subsystem / btn_sync)
 //   btnL  LEFT        btnR  RIGHT      btnU  ROTATE
 //   btnD  DOWN        btnC  HARD DROP

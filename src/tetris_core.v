@@ -154,8 +154,7 @@ output st_over
 
   reg[19:0]row_j;
   assign landed=collide(p_x, p_y +5'd1/* logic[4:0] */, p_mask /* logic[15:0] */);
-  wire [7:0]grave_level[3
-  :0];
+  wire [7:0]grave_level[3:0];
   assign grave_level[0]=8'd30;
   assign grave_level[1]=8'd22;
   assign grave_level[2]=8'd16;
