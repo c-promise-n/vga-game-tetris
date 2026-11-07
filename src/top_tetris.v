@@ -1,15 +1,14 @@
 `timescale 1ns / 1ps
-//======================================================================
 // top_tetris - board top level for the integrated game
 // Control mapping (must match input_subsystem / btn_sync)
 //   btnL  LEFT        btnR  RIGHT      btnU  ROTATE
 //   btnD  DOWN        btnC  HARD DROP
 //   sw[14] PAUSE      sw[13] RESTART    sw[12] START
 //   sw[15] RESET      (drives rst_n, so it is not a key)
-//
+
 // The session FSM powers up in IDLE and waits for START or RESTART, so
 // after programming flip sw[12] (or sw[13]) once to begin playing.
-//
+
 // LED map (bring-up aids)
 //   led[7:0]   key_pressed level map
 //   led[8]     any key event, stretched to about 100 ms
@@ -19,12 +18,12 @@
 //   led[13]    ON while the design is held in reset  (sw[15] up)
 //   led[14]    sw[11] colour bar mode
 //   led[15]    1 Hz heartbeat from frame_tick
-//
+
 // Bring-up bisect
 //   led[13] on            -> sw[15] is up, the whole design is in reset
 //   led[15] blinking      -> clock, vga_timing and frame_tick are alive
 //   sw[11] up shows bars  -> video pins / cable / monitor are fine
-//======================================================================
+
 module top_tetris (
     input  wire        clk,        // W5   100 MHz
     input  wire        btn_c,      // U18  hard drop
@@ -44,14 +43,14 @@ module top_tetris (
     output wire [3:0]  an
 );
 
-    //------------------------------------------------------------------
+
     // reset : switch driven, active high on sw[15] -> rst_n active low
-    //------------------------------------------------------------------
+
     wire rst_n = ~sw[15];
 
-    //------------------------------------------------------------------
+
     // video timing
-    //------------------------------------------------------------------
+
     wire [9:0] px, py;
     wire       de, pixel_ce, hsync, vsync, frame_tick;
 
@@ -70,9 +69,9 @@ module top_tetris (
     wire [8:0] px_log = px[9:1];
     wire [8:0] py_log = py[9:1];
 
-    //------------------------------------------------------------------
+
     // cell coordinates
-    //------------------------------------------------------------------
+
     wire [4:0] col_idx, row_idx;
     wire [3:0] col_px,  row_px;
 
@@ -89,9 +88,8 @@ module top_tetris (
         .row_px   (row_px)
     );
 
-    //------------------------------------------------------------------
     // input chain
-    //------------------------------------------------------------------
+
     wire [7:0] key_pressed, key_edge;
     wire       move_left, move_right;
 
@@ -113,9 +111,9 @@ module top_tetris (
         .move_left   (move_left)
     );
 
-    //------------------------------------------------------------------
+    
     // game core
-    //------------------------------------------------------------------
+    
     wire [9:0]  field_occ_row;
     wire [29:0] field_type_row;
     wire [2:0]  p_type, next_type;
@@ -153,9 +151,9 @@ module top_tetris (
         .lines          (lines)
     );
 
-    //------------------------------------------------------------------
+    
     // renderer
-    //------------------------------------------------------------------
+    
     wire [3:0] color_idx;
 
     render u_render (
@@ -206,13 +204,13 @@ module top_tetris (
     assign vga_g = rgb_o[7:4];
     assign vga_b = rgb_o[3:0];
 
-    //------------------------------------------------------------------
+    
     // 7-segment score display
     //
     // score_display takes the three digits already split, so the binary to
     // BCD conversion lives here. Saturate at 999 because only three digits
     // are driven.
-    //------------------------------------------------------------------
+    
 
 
 
@@ -236,9 +234,9 @@ module top_tetris (
         .an       (an)
     );
 
-    //------------------------------------------------------------------
+    
     // LEDs : key state plus a heartbeat
-    //------------------------------------------------------------------
+    
     reg [20:0] st_act;
     wire       any_edge = |key_edge;
 

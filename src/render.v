@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 module render(
 input [8:0]px_log,
-//input [8:0]py_log,remain for expansion
+input [8:0]py_log,
 input [4:0]col_idx,
 input [4:0]row_idx,
 input [3:0]col_px,
@@ -10,6 +10,11 @@ input [2:0]p_type,
 input [4:0]p_x,
 input [4:0]p_y,
 input [15:0]shape_mask,
+input [2:0]next_type,
+input [15:0]next_mask,
+input [15:0]score,
+input [2:0]level,
+input [6:0]lines,
 input [9:0]field_occ_row,
 input [29:0]field_type_row,
 output reg[3:0]color_idx
@@ -42,7 +47,17 @@ output reg[3:0]color_idx
     assign inbox=(drow<=6'd3)&&(dcol<=6'd3);
     assign hit_piece=inbox && shape_mask[{drow[1:0],dcol[1:0]}];
 
-
+    wire [3:0]color_idx_panel;
+    panel panel (
+        .px_log         (px_log),
+        .py_log         (py_log),
+        .next_type      (next_type),
+        .next_mask      (next_mask),
+        .score          (score),
+        .level          (level),
+        .lines          (lines),
+        .color_idx_panel(color_idx_panel)
+    );
     always @(*) begin
          if(in_field)begin
             if(hit_piece)begin
@@ -57,7 +72,7 @@ output reg[3:0]color_idx
         end else if(in_border)begin
             color_idx=  4'hD;
         end else if(in_panel)begin
-            color_idx=4'hF;
+            color_idx=color_idx_panel;
         end else begin
             color_idx=4'h0;
         end
