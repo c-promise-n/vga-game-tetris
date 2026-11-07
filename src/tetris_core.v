@@ -15,7 +15,7 @@ output [9:0]occ_row,
 output [29:0]type_row,
 
 (*max_fanout=8*)output reg [2:0]p_type,
-output reg [1:0]p_rot,
+(*max_fanout=8*)output reg [1:0]p_rot,
 output reg [4:0]p_x,
 output reg [4:0]p_y,
 output wire [15:0]p_mask,
@@ -67,12 +67,20 @@ output st_over
     .piece_type(pr_type)
   );
   wire [1:0]rot_nx=p_rot+2'd1;
-  wire[15:0]mask_try;
+  wire[15:0]mask_try_comb;
+  reg [15:0]mask_try;
   shape_rom u_rom_try (
     .bricktype(p_type),
     .rot      (rot_nx),
-    .mask     (mask_try)
+    .mask     (mask_try_comb)
   );
+  always@(posedge clk or negedge rst_n)begin
+    if(!rst_n)begin
+      mask_try<=16'd0;
+    end else begin
+      mask_try<=mask_try_comb;
+    end
+  end
  //b_x is biased by+2
   function automatic collide;
     input[4:0]b_x;
@@ -158,6 +166,9 @@ output st_over
 
 
   reg[19:0]row_j;
+  reg[19:0]lock_row[0:3];
+  reg[29:0]lock_type[0:3];
+  reg[4:0]lock_y;
   assign landed=collide(p_x, p_y +5'd1/* logic[4:0] */, p_mask /* logic[15:0] */);
   wire [7:0]grave_level[3:0];
   assign grave_level[0]=8'd30;
@@ -168,9 +179,9 @@ output st_over
   wire [7:0]GRAV =grave_level[level];
  reg [7:0]grav_cnt;
 
- localparam P_FALL = 2'd0,P_TOUCH=2'd1,P_DROP=2'd2,P_SETTLE=2'd3;
+ localparam P_FALL = 3'd0,P_TOUCH=3'd1,P_DROP=3'd2,P_LOCK=3'd3,P_WRITE=3'd4,P_SETTLE=3'd5;
  parameter lock_delay = 5'd30;
- reg [1:0]phase;
+ reg [2:0]phase;
   wire piece_active=(cur_state==PLAY)&&((phase==P_FALL)||(phase==P_TOUCH));
 
   reg lc_issued,lc_start,lc_done;
@@ -212,19 +223,6 @@ always@(posedge clk or negedge rst_n)begin
   end
 end
 assign ghost_on=(piece_active)&&(ghost_y!=p_y);
-  task do_lock;
-  begin
-          for(j=0;j<4;j=j+1)begin
-            row_j={16'd0,p_mask[j*4 +: 4]};
-            row_j=row_j<<p_x;
-            if((p_y+j<=19)&&(row_j<=20'h00FFC)&&(row_j[1:0]==2'b00))begin
-              field_occ[p_y+j]<=field_occ[p_y+j] | row_j[11:2];
-              field_type[p_y+j]<=field_type[p_y+j]|(type_pat & type_spread(row_j[11:2] /* logic[9:0] */));
-            end
-          end
-  end
-  endtask
-
   task do_spawn;
   begin
           p_type<=next_type;
@@ -387,12 +385,26 @@ endgenerate
           p_y<=p_y+5'd1;
           score<=score+16'd2;
         end else begin
-          do_lock();
-          lc_issued<=1'd0;
-          phase<=P_SETTLE;
+          phase<=P_LOCK;
         end
       end
-
+      if(phase==P_LOCK)begin
+        for(j=0;j<4;j=j+1)begin
+            row_j={16'd0,p_mask[j*4 +: 4]};
+            row_j=row_j<<p_x;
+            lock_row[j]<=row_j;
+            lock_type[j]<=type_pat&type_spread(row_j[11:2]);
+          end
+          lock_y<=p_y;
+          phase=P_WRITE;
+      end else if(phase==P_WRITE)begin
+      for(j=0;j<4;j=j+1)begin
+        if((lock_y+j<=19)&&(lock_row[j]<=20'h00FFC)&&(lock_row[j][1:0]==2'b00))begin
+              field_occ[lock_y+j]<=field_occ[lock_y+j] | lock_row[j][11:2];
+              field_type[lock_y+j]<=field_type[lock_y+j]|lock_type[j];
+          end
+        end
+      end
       if(frame_tick && (cur_state==PLAY))begin
         case(phase)
 
@@ -425,9 +437,7 @@ endgenerate
               phase<=P_FALL;
               grav_cnt<=8'd0;
             end else if(lock_cnt==lock_delay)begin
-              do_lock();
-              lc_issued<=1'd0;
-              phase<=P_SETTLE;
+                phase<=P_LOCK;
             end else begin
               lock_cnt<=lock_cnt+5'd1;
             end
@@ -443,6 +453,7 @@ endgenerate
               end
             end
           end
+
 
         endcase
       end
