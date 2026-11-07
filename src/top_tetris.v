@@ -151,7 +151,8 @@ module top_tetris (
         .st_over        (st_over),
         .level          (level),
         .lines          (lines),
-
+        .ghost_y        (ghost_y),
+        .ghost_on       (ghost_on)
     );
 
     
