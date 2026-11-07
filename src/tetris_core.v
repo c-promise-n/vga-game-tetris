@@ -47,7 +47,11 @@ output st_over
 
   reg [9:0] field_occ [0:19];
   reg [29:0]field_type[0:19];
-
+  reg [29:0] type_pat;
+  always@(posedge clk or negedge rst_n)begin
+    if(!rst_n) type_pat<=30'd0;
+    else if(type_pat!={10{p_type}}) type_pat<={10{p_type}};
+  end
   assign occ_row=field_occ[row_idx];
   assign type_row=field_type[row_idx];
 
@@ -96,18 +100,16 @@ output st_over
     end
   endfunction
 
-  function [29:0]type_expand;
+  function [29:0]type_spread;
   input[9:0]occ_mask;
-  input[2:0]b_type;
   integer i;
   begin
-    type_expand=30'd0;
+    type_spread=30'd0;
     for(i=0;i<10;i=i+1)begin
-      if(occ_mask[i]) type_expand[3*i+:3]=b_type;
+      if(occ_mask[i]) type_spread[3*i+:3]=3'b111;
     end
   end
   endfunction
-
   localparam IDLE =2'd0 ,
              PLAY=2'd1 ,
              PAUSE=2'd2,
@@ -178,7 +180,7 @@ output st_over
             row_j=row_j<<p_x;
             if((p_y+j<=19)&&(row_j<=20'h00FFC)&&(row_j[1:0]==2'b00))begin
               field_occ[p_y+j]<=field_occ[p_y+j] | row_j[11:2];
-              field_type[p_y+j]<=field_type[p_y+j]|type_expand(row_j[11:2] /* logic[9:0] */, p_type /* logic[2:0] */);
+              field_type[p_y+j]<=field_type[p_y+j]|(type_pat & type_spread(row_j[11:2] /* logic[9:0] */));
             end
           end
   end
