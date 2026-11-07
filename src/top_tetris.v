@@ -213,12 +213,18 @@ module top_tetris (
     // BCD conversion lives here. Saturate at 999 because only three digits
     // are driven.
     //------------------------------------------------------------------
-    wire [9:0] score_sat = (score > 16'd999) ? 10'd999 : score[9:0];
 
-    wire [3:0] bcd_h = score_sat / 10'd100;                // hundreds
-    wire [3:0] bcd_t = (score_sat % 10'd100) / 10'd10;     // tens
-    wire [3:0] bcd_o = score_sat % 10'd10;                 // ones
 
+
+    wire [3:0] bcd_h;
+    wire [3:0] bcd_t;
+    wire [3:0] bcd_o ;
+    bin_to_bcd u_bin_to_bcd (
+        .bin     (score),
+        .hundreds(bcd_h),
+        .tens    (bcd_t),
+        .ones    (bcd_o)
+    );
     score_display u_seg (
         .clk      (clk),
         .rst_n    (rst_n),
