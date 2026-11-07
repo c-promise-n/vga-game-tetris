@@ -398,7 +398,7 @@ endgenerate
             lock_type[j]<=type_pat&type_spread(row_j[11:2]);
           end
           lock_y<=p_y;
-          phase=P_WRITE;
+          phase<=P_WRITE;
       end else if(phase==P_WRITE)begin
       for(j=0;j<4;j=j+1)begin
         if((lock_y+j<=19)&&(lock_row[j]<=20'h00FFC)&&(lock_row[j][1:0]==2'b00))begin
@@ -406,6 +406,8 @@ endgenerate
               field_type[lock_y+j]<=field_type[lock_y+j]|lock_type[j];
           end
         end
+        lc_issued<=1'd0;
+        phase<=P_SETTLE;
       end
       if(frame_tick && (cur_state==PLAY))begin
         case(phase)

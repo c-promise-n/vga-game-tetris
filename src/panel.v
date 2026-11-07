@@ -41,7 +41,8 @@ wire [8:0]next_pos_y=py_log-next_y0;
 
 wire [1:0]next_col=next_pos_x[5:4];
 wire [1:0]next_row=next_pos_y[5:4];
-wire next_cell=in_next && next_mask[{next_row,next_col}];
+wire next_inside=(px_log>=next_x0)&&(py_log>=next_y0)&&(next_pos_x<9'd64)&&(next_pos_y<9'd64);
+wire next_cell=in_next && next_inside && next_mask[{next_row,next_col}];
 wire next_edge=(px_log==NEXT_X0)||(px_log==NEXT_X0+9'd63)||
             (py_log==NEXT_Y0)||(py_log==NEXT_Y0+9'd63);
 
@@ -114,7 +115,7 @@ wire[1:0]dig_idx=dig_pos_x[5:4];
 wire [2:0]dig_glyph_x=dig_pos_x[3:1];
 wire [2:0]dig_glyph_y=dig_pos_y[3:1];
 
-wire in_dig_y=dig_level_row|dig_level_row|dig_lines_row;
+wire in_dig_y=dig_score_row|dig_level_row|dig_lines_row;
 wire dig_region=in_dig_x && in_dig_y;
 reg [3:0]dig_val;
 always@(*)begin
@@ -126,7 +127,7 @@ always@(*)begin
         2'd2:dig_val=score_o;
         default:dig_val=score_o;
         endcase
-    end else if(label_level_row)begin
+    end else if(dig_level_row)begin
         if(dig_idx==2'd0)dig_val={1'b0,level};
     end else if(dig_lines_row)begin
         case(dig_idx)
