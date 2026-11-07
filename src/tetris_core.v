@@ -17,7 +17,7 @@ output [29:0]type_row,
 (*max_fanout=8*)output reg [2:0]p_type,
 (*max_fanout=8*)output reg [1:0]p_rot,
 (*max_fanout=16*)output reg [4:0]p_x,
-output reg [4:0]p_y,
+(*max_fanout=16*)output reg [4:0]p_y,
 output wire [15:0]p_mask,
 
 output reg[2:0]next_type,
@@ -27,16 +27,18 @@ output [19:0]flash_rows,
 output reg[4:0] ghost_y,
 output ghost_on,
 
-(*max_fanout=8*)output reg[15:0]score,
+ output reg[3:0]score_h,score_o,score_t,
+ output reg[3:0]lines_h,lines_t,lines_o,
 output reg [2:0]level,
-output reg [6:0]lines,
+
 
 output st_idle,
 output st_pause,
 output st_over
 
   );
-
+  reg [15:0]score;
+  reg[6:0]lines;
   shape_rom u_shape_rom (
     .bricktype(p_type),
     .rot      (p_rot),
@@ -547,4 +549,36 @@ endgenerate
   assign st_pause=(cur_state==PAUSE);
   assign st_over=(cur_state==OVER);
   assign flash_rows=(lc_state==L_FLASH)?full_lat:20'd0;
+    wire[3:0]score_h_c,score_o_c,score_t_c;
+    wire[3:0]lines_h_c,lines_t_c,lines_o_c;
+    bin_to_bcd u_score_bcd (
+        .bin     (score),
+        .hundreds(score_h_c),
+        .tens    (score_t_c),
+        .ones    (score_o_c)
+    );
+    bin_to_bcd u_lines_bcd (
+        .bin     ({9'b0,lines}),
+        .hundreds(lines_h_c),
+        .tens    (lines_t_c),
+        .ones    (lines_o_c)
+    );
+
+    always@(posedge clk or negedge rst_n)begin
+      if(!rst_n)begin
+        score_h<=4'd0;
+        score_t<=4'd0;
+        score_o<=4'd0;
+        lines_h<=4'd0;
+        lines_t<=4'd0;
+        lines_o<=4'd0;
+      end else begin
+        score_h<=score_h_c;
+        score_t<=score_t_c;
+        score_o<=score_o_c;
+        lines_h<=lines_h_c;
+        lines_t<=lines_t_c;
+        lines_o<=lines_o_c;
+      end
+    end
 endmodule

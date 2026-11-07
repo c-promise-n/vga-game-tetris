@@ -144,6 +144,8 @@ module top_tetris (
     wire[4:0]ghost_y;
     wire    ghost_on;
     wire[19:0]flash_rows;
+    wire[3:0]score_h,score_o,score_t;
+    wire[3:0]lines_h,lines_t,lines_o;
 
 
     tetris_core u_core (
@@ -164,33 +166,25 @@ module top_tetris (
         .p_mask       (p_mask),
         .next_type    (next_type),
         .next_mask    (next_mask),
-        .score        (score),
+        .score_h        (score_h),
+        .score_t        (score_t),
+        .score_o        (score_o),
         .st_idle       (st_idle),
         .st_pause       (st_pause),
         .st_over        (st_over),
         .flash_rows     (flash_rows),
         .level          (level),
-        .lines          (lines),
+        .lines_h        (lines_h),
+        .lines_t        (lines_t),
+        .lines_o        (lines_o),
         .ghost_y        (ghost_y),
         .ghost_on       (ghost_on)
     );
 
     // renderer
     wire [3:0] color_idx;
-    wire[3:0]score_h,score_o,score_t;
-    wire[3:0]lines_h,lines_t,lines_o;
-    bin_to_bcd u_score_bcd (
-        .bin     (score),
-        .hundreds(score_h),
-        .tens    (score_t),
-        .ones    (score_o)
-    );
-    bin_to_bcd u_lines_bcd (
-        .bin     (lines),
-        .hundreds(lines_h),
-        .tens    (lines_t),
-        .ones    (lines_o)
-    );
+
+
     render u_render (
         .px_log         (px_log),
         .col_idx        (col_idx),
