@@ -125,6 +125,7 @@ module top_tetris (
     wire [6:0]lines;
     wire[4:0]ghost_y;
     wire    ghost_on;
+    wire[19:0]flash_rows;
 
 
     tetris_core u_core (
@@ -149,6 +150,7 @@ module top_tetris (
         .st_idle       (st_idle),
         .st_pause       (st_pause),
         .st_over        (st_over),
+        .flash_rows     (flash_rows),
         .level          (level),
         .lines          (lines),
         .ghost_y        (ghost_y),
@@ -178,6 +180,7 @@ module top_tetris (
         .score          (score),
         .level          (level),
         .lines          (lines),
+        .flash_rows     (flash_rows),
         .ghost_y        (ghost_y),
         .ghost_on       (ghost_on)
 
