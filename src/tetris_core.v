@@ -16,7 +16,7 @@ output [29:0]type_row,
 
 (*max_fanout=8*)output reg [2:0]p_type,
 (*max_fanout=8*)output reg [1:0]p_rot,
-output reg [4:0]p_x,
+(*max_fanout=16*)output reg [4:0]p_x,
 output reg [4:0]p_y,
 output wire [15:0]p_mask,
 
@@ -27,7 +27,7 @@ output [19:0]flash_rows,
 output reg[4:0] ghost_y,
 output ghost_on,
 
-output reg[15:0]score,
+(*max_fanout=8*)output reg[15:0]score,
 output reg [2:0]level,
 output reg [6:0]lines,
 
@@ -68,7 +68,7 @@ output st_over
   );
   wire [1:0]rot_nx=p_rot+2'd1;
   wire[15:0]mask_try_comb;
-  reg [15:0]mask_try;
+  (*max_fanout=8*)reg [15:0]mask_try;
   shape_rom u_rom_try (
     .bricktype(p_type),
     .rot      (rot_nx),

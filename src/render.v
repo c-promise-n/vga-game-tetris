@@ -15,9 +15,9 @@ input [15:0]next_mask,
 input [19:0]flash_rows,
 input [4:0]ghost_y,
 input ghost_on,
-input [15:0]score,
+input [3:0]score_h,score_t,score_o,
 input [2:0]level,
-input [6:0]lines,
+input [3:0]lines_h,lines_t,lines_o,
 input [9:0]field_occ_row,
 input [29:0]field_type_row,
 output reg[3:0]color_idx
@@ -50,11 +50,11 @@ output reg[3:0]color_idx
     assign inbox=(drow<=6'd3)&&(dcol<=6'd3);
     assign hit_piece=inbox && shape_mask[{drow[1:0],dcol[1:0]}];
 
-    wire [5:0]drow_ghost,dcol_ghost;
+    wire [5:0]drow_ghost;
     assign drow_ghost={1'b0,row_idx}-{1'b0,ghost_y};
     wire ghost_inbox;
     assign ghost_inbox=(drow_ghost<=6'd3)&&(dcol<=6'd3);
-    wire hit_ghost=ghost_on && inbox && shape_mask[{drow_ghost[1:0],dcol[1:0]}];
+    wire hit_ghost=ghost_on && ghost_inbox && shape_mask[{drow_ghost[1:0],dcol[1:0]}];
 
     wire [3:0]color_idx_panel;
     panel panel (
@@ -62,9 +62,13 @@ output reg[3:0]color_idx
         .py_log         (py_log),
         .next_type      (next_type),
         .next_mask      (next_mask),
-        .score          (score),
+        .score_h        (score_h),
+        .score_t        (score_t),
+        .score_o        (score_o),
         .level          (level),
-        .lines          (lines),
+        .lines_h        (lines_h),
+        .lines_t         (lines_t),
+        .lines_o         (lines_o),
         .color_idx_panel(color_idx_panel)
     );
     wire flash_now=flash_rows[row_idx];

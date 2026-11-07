@@ -4,9 +4,9 @@ input [8:0]px_log,
 input [8:0]py_log,
 input [2:0]next_type,
 input [15:0]next_mask,
-input [15:0]score,
+input [3:0]score_h,score_t,score_o,
 input [2:0]level,
-input [6:0]lines,
+input [3:0]lines_h,lines_t,lines_o,
 output reg [3:0]color_idx_panel
     );
 
@@ -24,21 +24,8 @@ output reg [3:0]color_idx_panel
     localparam [5:0] CH_0  = 6'd27;
 
 
-wire [3:0]score_h,score_t,score_o;
-wire [3:0]lines_h,lines_t,lines_o;
-bin_to_bcd u_score (
-    .bin     (score),
-    .hundreds(score_h),
-    .tens    (score_t),
-    .ones    (score_o)
-);
 
-bin_to_bcd u_lines (
-    .bin     ({9'd0,lines}),
-    .hundreds(lines_h),
-    .tens    (lines_t),
-    .ones    (lines_o)
-);
+
 localparam [8:0]NEXT_X0 = 9'd194;
 localparam [8:0]NEXT_Y0=9'd52;
 

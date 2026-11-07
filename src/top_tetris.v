@@ -53,6 +53,24 @@ module top_tetris (
 
     wire [9:0] px, py;
     wire       de, pixel_ce, hsync, vsync, frame_tick;
+    (*max_fanout=8*)reg [9:0]px_r;
+    (*max_fanout=8*)reg [9:0]py_r;
+    reg hsync_r,vsync_r,de_r;
+    always @(posedge clk or negedge rst_n) begin
+        if(!rst_n)begin
+            px_r<=10'd0;
+            py_r<=10'd0;
+            hsync_r<=1'd1;
+            vsync_r<=1'd1;
+            de_r<=1'd0;
+        end else begin
+            px_r<=px;
+            py_r<=py;
+            hsync_r<=hsync;
+            vsync_r<=vsync;
+            de_r<=de;
+        end
+    end
 
     vga_timing u_vga (
         .clk        (clk),
@@ -66,8 +84,8 @@ module top_tetris (
         .vsync      (vsync)
     );
 
-    wire [8:0] px_log = px[9:1];
-    wire [8:0] py_log = py[9:1];
+    wire [8:0] px_log = px_r[9:1];
+    wire [8:0] py_log = py_r[9:1];
 
 
     // cell coordinates
@@ -80,8 +98,8 @@ module top_tetris (
         .rst_n    (rst_n),
         .de       (de),
         .pixel_ce (pixel_ce),
-        .px       (px),
-        .py       (py),
+        .px       (px_r),
+        .py       (py_r),
         .col_idx  (col_idx),
         .row_idx  (row_idx),
         .col_px   (col_px),
@@ -157,10 +175,22 @@ module top_tetris (
         .ghost_on       (ghost_on)
     );
 
-    
     // renderer
     wire [3:0] color_idx;
-
+    wire[3:0]score_h,score_o,score_t;
+    wire[3:0]lines_h,lines_t,lines_o;
+    bin_to_bcd u_score_bcd (
+        .bin     (score),
+        .hundreds(score_h),
+        .tens    (score_t),
+        .ones    (score_o)
+    );
+    bin_to_bcd u_lines_bcd (
+        .bin     (lines),
+        .hundreds(lines_h),
+        .tens    (lines_t),
+        .ones    (lines_o)
+    );
     render u_render (
         .px_log         (px_log),
         .col_idx        (col_idx),
@@ -177,9 +207,13 @@ module top_tetris (
         .py_log         (py_log),
         .next_type      (next_type),
         .next_mask      (next_mask),
-        .score          (score),
+        .score_h          (score_h),
+        .score_t          (score_t),
+        .score_o          (score_o),
         .level          (level),
-        .lines          (lines),
+        .lines_h          (lines_h),
+        .lines_t          (lines_t),
+        .lines_o          (lines_o),
         .flash_rows     (flash_rows),
         .ghost_y        (ghost_y),
         .ghost_on       (ghost_on)
@@ -205,9 +239,9 @@ module top_tetris (
     video_pipe u_video_pipe (
         .clk        (clk),
         .rst_n      (rst_n),
-        .hsync_i    (hsync),
-        .vsync_i    (vsync),
-        .de_i       (de),
+        .hsync_i    (hsync_r),
+        .vsync_i    (vsync_r),
+        .de_i       (de_r),
         .dim_i      (dim),
         .color_idx_i(color_idx_final),
         .hsync_o    (vga_hs),
@@ -228,22 +262,12 @@ module top_tetris (
     // are driven.
 
 
-
-    wire [3:0] bcd_h;
-    wire [3:0] bcd_t;
-    wire [3:0] bcd_o ;
-    bin_to_bcd u_bin_to_bcd (
-        .bin     (score),
-        .hundreds(bcd_h),
-        .tens    (bcd_t),
-        .ones    (bcd_o)
-    );
     score_display u_seg (
         .clk      (clk),
         .rst_n    (rst_n),
-        .hundrens (bcd_h),
-        .tens     (bcd_t),
-        .ones     (bcd_o),
+        .hundrens (score_h),
+        .tens     (score_t),
+        .ones     (score_o),
         .seg      (seg),
         .dp       (dp),
         .an       (an)
