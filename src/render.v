@@ -12,6 +12,7 @@ input [4:0]p_y,
 input [15:0]shape_mask,
 input [2:0]next_type,
 input [15:0]next_mask,
+input [19:0]flash_rows,
 input [15:0]score,
 input [2:0]level,
 input [6:0]lines,
@@ -58,9 +59,12 @@ output reg[3:0]color_idx
         .lines          (lines),
         .color_idx_panel(color_idx_panel)
     );
+    wire flash_now=flash_rows[row_idx];
     always @(*) begin
          if(in_field)begin
-            if(hit_piece)begin
+            if(flash_now)begin
+                color_idx=4'hC;
+            end else if(hit_piece)begin
                 color_idx = p_type +4'h2;
             end else if(occ)begin
                 color_idx = cell_type + 4'h2;

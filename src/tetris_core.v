@@ -23,6 +23,7 @@ output wire [15:0]p_mask,
 output reg[2:0]next_type,
 output wire[15:0]next_mask,
 
+output [19:0]flash_rows,
 
 output reg[15:0]score,
 output reg [2:0]level,
@@ -142,7 +143,7 @@ output st_over
       PLAY:if(pause_level) next_state=PAUSE;
         else if(game_over) next_state=OVER;
 
-      PAUSE:if(pause_level)next_state=PLAY;
+      PAUSE:if(!pause_level)next_state=PLAY;
 
       OVER:if(restart_now)next_state=PLAY;
       default:next_state=IDLE;
@@ -204,7 +205,8 @@ output st_over
 
 localparam L_IDLE = 2'd0,
             L_COLL=2'd1,
-            L_FILL=2'd2;
+            L_FILL=2'd2,
+            L_FLASH=2'd3;
 
 reg [1:0]lc_state;
 reg [4:0]rp,wp;
@@ -214,6 +216,8 @@ reg [2:0]lc_n;
 genvar gi;
 reg [4:0]pre_cnt;
 reg     pre_done;
+localparam [2:0]FLASH_FRAME = 3'd6;
+reg [2:0]flash_cnt;
 wire[7:0]lines_next={1'b0,lines}+{5'b0,lc_n};
 generate
   for(gi=0;gi<20;gi=gi+1)begin:g_full
@@ -238,6 +242,7 @@ endgenerate
         level<=3'd0;
         lines<=7'd0;
         game_over<=1'b0;
+        flash_cnt<=3'd0;
         pre_cnt<=5'd0;
         pre_done<=1'd0;
         phase<=P_FALL;
@@ -269,6 +274,7 @@ endgenerate
         lock_cnt<=5'd0;
         lc_issued<=1'd0;
         grav_cnt<=8'b0;
+        flash_cnt<=3'd0;
         level<=3'd0;
         lines<=7'd0;
         game_over<=1'b0;
@@ -391,7 +397,7 @@ endgenerate
           end
 
           P_SETTLE:begin
-            if((lc_state==IDLE)&&(!lc_issued))begin
+            if((lc_state==L_IDLE)&&(!lc_issued))begin
               if(|full_now)begin
                 lc_start<=1'b1;
                 lc_issued<=1'b1;
@@ -448,7 +454,7 @@ endgenerate
         lc_n<=3'd0;
         if(lc_start&&(|full_now))begin
           full_lat<=full_now;
-          lc_state<=L_COLL;
+          lc_state<=L_FLASH;
         end
       end
 
@@ -474,6 +480,17 @@ endgenerate
           wp<=wp-5'd1;
         end
       end
+
+      L_FLASH:begin
+        if(frame_tick)begin
+          if(flash_cnt==FLASH_FRAME-3'd1)begin
+            flash_cnt<=3'd0;
+            lc_state<=L_COLL;
+          end else begin
+            flash_cnt<=flash_cnt+3'd1;
+          end
+        end
+      end
       endcase
     end
   end
@@ -481,4 +498,5 @@ endgenerate
   assign st_idle=(cur_state==IDLE);
   assign st_pause=(cur_state==PAUSE);
   assign st_over=(cur_state==OVER);
+  assign flash_rows=(lc_state==L_FLASH)?full_lat:20'd0;
 endmodule
