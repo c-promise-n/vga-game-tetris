@@ -193,45 +193,20 @@ module top_tetris (
         .dim            (dim)
     );
     wire [3:0]color_idx_final=text_px?COL_TEXT:color_idx;
-    wire [11:0] rgb_game;
-    palette u_pal (
-        .index (color_idx_final),
-        .rgb   (rgb_game)
-    );
-
-    //------------------------------------------------------------------
-    // VGA self test : sw[11] up replaces the game image with 8 colour bars
-    //
-    //   bars visible  -> timing, pins, cable and monitor are all fine, so
-    //                    a missing game image is a render or core problem
-    //   bars missing  -> the video path itself is wrong (reset, pins, cable)
-    //
-    // This costs a handful of LUTs and removes all guessing.
-    //------------------------------------------------------------------
-    wire [11:0] rgb_bar =
-        (px < 10'd80 ) ? 12'hF00 :      // red
-        (px < 10'd160) ? 12'h0F0 :      // green
-        (px < 10'd240) ? 12'h00F :      // blue
-        (px < 10'd320) ? 12'hFF0 :      // yellow
-        (px < 10'd400) ? 12'hF0F :      // magenta
-        (px < 10'd480) ? 12'h0FF :      // cyan
-        (px < 10'd560) ? 12'hFFF : 12'h888;
-
-    wire [11:0] rgb = sw[11] ? rgb_bar : rgb_game;
 
     wire [11:0] rgb_o;
 
-    pixel_pipe u_pipe (
-        .clk     (clk),
-        .rst_n   (rst_n),
-        .hsync_i (hsync),
-        .vsync_i (vsync),
-        .de_i    (de),
-        .rgb_i   (rgb),
-        .hsync_o (vga_hs),
-        .vsync_o (vga_vs),
-        .rgb_o   (rgb_o),
-        .dim     (dim)
+    video_pipe u_video_pipe (
+        .clk        (clk),
+        .rst_n      (rst_n),
+        .hsync_i    (hsync),
+        .vsync_i    (vsync),
+        .de_i       (de),
+        .dim_i      (dim),
+        .color_idx_i(color_idx_final),
+        .hsync_o    (vga_hs),
+        .vsync_o    (vga_vs),
+        .rgb_o      (rgb_o)
     );
 
     assign vga_r = rgb_o[11:8];
