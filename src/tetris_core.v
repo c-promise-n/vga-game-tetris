@@ -117,12 +117,13 @@ output st_over
   reg game_over;
   wire drop,down;
   reg [1:0]cur_state,next_state;
-  wire start_paulse,restart_paulse,pause_pulse;
+  wire start_paulse,pause_level;
   assign start_paulse=key_edge[7]|key_edge[6];
-  assign restart_paulse=key_edge[6];
-  assign pause_pulse=key_edge[5];
+  assign pause_level=key_pressed[5];
   assign drop=key_edge[4];
   assign down=key_pressed[2];
+  wire restart_now=key_edge[6]|((cur_state==OVER)&&key_edge[4]);
+  wire do_start=start_paulse&&(cur_state==IDLE);
   wire rotate;
   assign rotate=key_edge[3];
   always @(posedge clk or negedge rst_n) begin
@@ -136,14 +137,14 @@ output st_over
   always @(*) begin
     next_state=cur_state;
     case (cur_state)
-      IDLE:if(start_paulse) next_state=PLAY;
+      IDLE:if(do_start) next_state=PLAY;
 
-      PLAY:if(pause_pulse) next_state=PAUSE;
+      PLAY:if(pause_level) next_state=PAUSE;
         else if(game_over) next_state=OVER;
 
-      PAUSE:if(pause_pulse)next_state=PLAY;
+      PAUSE:if(pause_level)next_state=PLAY;
 
-      OVER:if(restart_paulse)next_state=PLAY;
+      OVER:if(restart_now)next_state=PLAY;
       default:next_state=IDLE;
     endcase
   end
@@ -252,7 +253,7 @@ endgenerate
       lc_start<=1'b0;
       lc_done<=1'b0;
 
-      if(restart_paulse)begin
+      if(restart_now)begin
         for(r=0;r<20;r=r+1)begin
           field_occ[r]<=10'd0;
           field_type[r]<=30'd0;
@@ -281,7 +282,7 @@ endgenerate
         lc_issued<=1'b0;
         score<=16'b0;
       end else begin
-        if(!pre_done&&!start_paulse)begin
+        if(!pre_done&&!do_start)begin
           if(pre_cnt==5'd8)begin
             p_type<=pr_type;
             pr_spawn<=1'b1;
@@ -293,7 +294,7 @@ endgenerate
           pre_cnt<=pre_cnt+1'b1;
         end
 
-        if(start_paulse)begin
+        if(do_start)begin
         pre_cnt<=5'd0;
         pre_done<=1'd0;
         end
