@@ -111,9 +111,8 @@ module top_tetris (
         .move_left   (move_left)
     );
 
-    
+
     // game core
-    
     wire [9:0]  field_occ_row;
     wire [29:0] field_type_row;
     wire [2:0]  p_type, next_type;
@@ -153,7 +152,6 @@ module top_tetris (
 
     
     // renderer
-    
     wire [3:0] color_idx;
 
     render u_render (
@@ -168,7 +166,14 @@ module top_tetris (
         .shape_mask     (p_mask),
         .field_occ_row  (field_occ_row),
         .field_type_row (field_type_row),
-        .color_idx      (color_idx)
+        .color_idx      (color_idx),
+        .py_log         (py_log),
+        .next_type      (next_type),
+        .next_mask      (next_mask),
+        .score          (score),
+        .level          (level),
+        .lines          (lines)
+
     );
 
     localparam [3:0]COL_TEXT=4'h9;
@@ -197,14 +202,15 @@ module top_tetris (
         .color_idx_i(color_idx_final),
         .hsync_o    (vga_hs),
         .vsync_o    (vga_vs),
-        .rgb_o      (rgb_o)
+        .rgb_o      (rgb_o),
+        .line_odd_i (py[0])
     );
 
     assign vga_r = rgb_o[11:8];
     assign vga_g = rgb_o[7:4];
     assign vga_b = rgb_o[3:0];
 
-    
+
     // 7-segment score display
     //
     // score_display takes the three digits already split, so the binary to

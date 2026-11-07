@@ -50,7 +50,7 @@ wire [8:0]offset_y=(next_type==3'd0)?9'd8:9'd0;
 wire [8:0]next_x0=NEXT_X0+offset_x;
 wire [8:0]next_y0=NEXT_Y0+offset_y;
 wire [8:0]next_pos_x=px_log-next_x0;
-wire [8:0]next_pos_y=py_log-next_x0;
+wire [8:0]next_pos_y=py_log-next_y0;
 
 wire [1:0]next_col=next_pos_x[5:4];
 wire [1:0]next_row=next_pos_y[5:4];

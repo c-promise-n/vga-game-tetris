@@ -7,6 +7,7 @@ input vsync_i,
 input de_i,
 input dim_i,
 input [3:0]color_idx_i,
+input line_odd_i,
 output  hsync_o,
 output  vsync_o,
 output  [11:0]rgb_o
@@ -16,6 +17,7 @@ reg dim_r0;
 reg hsync_r0,hsync_r1;
 reg vsync_r0,vsync_r1;
 reg de_r0;
+reg line_odd_r0;
 
 wire [11:0]rgb_game;
 always@(posedge clk or negedge rst_n)begin
@@ -25,12 +27,14 @@ always@(posedge clk or negedge rst_n)begin
         color_idx_r0<=4'd0;
         dim_r0<=1'd0;
         de_r0<=1'b0;
+        line_odd_r0<=1'b0;
     end else begin
         hsync_r0<=hsync_i;
         vsync_r0<=vsync_i;
         color_idx_r0<=color_idx_i;
         dim_r0<=dim_i;
         de_r0<=de_i;
+        line_odd_r0<=line_odd_i;
     end
 end
 
@@ -38,7 +42,9 @@ palette u_pal (
     .index(color_idx_r0),
     .rgb  (rgb_game)
 );
-wire [11:0]rgb_r0=dim_r0?({1'b0,rgb_game[11:1]}):rgb_game;
+wire[11:0]rgb_half={1'b0,rgb_game[11:1]};
+wire[11:0]rgb_quarter={2'b00,rgb_game[11:2]};
+wire [11:0]rgb_r0=line_odd_r0?(dim_r0?rgb_quarter:rgb_half):(dim_r0?rgb_half:rgb_game);
 reg [11:0]rgb_r1;
 
 always@(posedge clk or negedge rst_n)begin
