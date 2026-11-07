@@ -173,6 +173,7 @@ output st_over
 
   reg [4:0]lock_cnt;
 
+
   task do_lock;
   begin
           for(j=0;j<4;j=j+1)begin
@@ -213,6 +214,7 @@ reg [2:0]lc_n;
 genvar gi;
 reg [4:0]pre_cnt;
 reg     pre_done;
+wire[7:0]lines_next={1'b0,lines}+{5'b0,lc_n};
 generate
   for(gi=0;gi<20;gi=gi+1)begin:g_full
     assign full_now[gi]={field_occ[gi]==10'h3FF};
@@ -425,11 +427,11 @@ endgenerate
             lines<=lines;
           end
         endcase
-          if(lines<9)begin
+          if(lines_next<8'd10)begin
             level<=3'b0;
-          end else if(lines<19)begin
+          end else if(lines_next<8'd20)begin
             level<=3'b1;
-          end else if(lines<29)begin
+          end else if(lines_next<30)begin
             level<=3'd2;
           end else begin
             level<=3'd3;
