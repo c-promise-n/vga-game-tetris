@@ -24,6 +24,8 @@ output reg[2:0]next_type,
 output wire[15:0]next_mask,
 
 output [19:0]flash_rows,
+output reg[4:0] ghost_y,
+output ghost_on,
 
 output reg[15:0]score,
 output reg [2:0]level,
@@ -111,6 +113,7 @@ output st_over
     end
   end
   endfunction
+
   localparam IDLE =2'd0 ,
              PLAY=2'd1 ,
              PAUSE=2'd2,
@@ -175,6 +178,40 @@ output st_over
   reg [4:0]lock_cnt;
 
 
+reg ghost_busy;
+reg [1:0]g_rot_d;
+reg [4:0]g_y_d,g_x_d;
+reg [2:0]g_type_d;
+wire piece_changed=(p_rot!=g_rot_d) ||(p_x!=g_x_d)||(p_y!=g_y_d)||(p_type!=g_type_d);
+always@(posedge clk or negedge rst_n)begin
+  if(!rst_n)begin
+    ghost_y<=5'd0;
+    ghost_busy<=1'd0;
+    g_rot_d<=2'd0;
+    g_y_d<=5'd0;
+    g_x_d<=5'd0;
+    g_type_d<=3'd0;
+  end else begin
+    g_rot_d<=p_rot;
+    g_x_d<=p_x;
+    g_y_d<=p_y;
+    g_type_d<=p_type;
+    if(!piece_active)begin
+      ghost_y<=p_y;
+      ghost_busy<=1'b0;
+    end else if(piece_changed)begin
+      ghost_y<=p_y;
+      ghost_busy<=1'b1;
+    end else if(ghost_busy)begin
+      if((collide(p_x /* logic[4:0] */, ghost_y+5'd1 /* logic[4:0] */, p_mask /* logic[15:0] */)))begin
+        ghost_busy<=1'b0;
+      end else begin
+        ghost_y<=ghost_y+5'd1;
+      end
+    end
+  end
+end
+assign ghost_on=(piece_active)&&(ghost_y!=p_y);
   task do_lock;
   begin
           for(j=0;j<4;j=j+1)begin

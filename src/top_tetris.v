@@ -123,6 +123,9 @@ module top_tetris (
     wire st_idle,st_pause,st_over;
     wire [2:0]level;
     wire [6:0]lines;
+    wire[4:0]ghost_y;
+    wire    ghost_on;
+
 
     tetris_core u_core (
         .clk          (clk),
@@ -147,7 +150,8 @@ module top_tetris (
         .st_pause       (st_pause),
         .st_over        (st_over),
         .level          (level),
-        .lines          (lines)
+        .lines          (lines),
+
     );
 
     
@@ -172,7 +176,9 @@ module top_tetris (
         .next_mask      (next_mask),
         .score          (score),
         .level          (level),
-        .lines          (lines)
+        .lines          (lines),
+        .ghost_y        (ghost_y),
+        .ghost_on       (ghost_on)
 
     );
 
@@ -216,7 +222,6 @@ module top_tetris (
     // score_display takes the three digits already split, so the binary to
     // BCD conversion lives here. Saturate at 999 because only three digits
     // are driven.
-    
 
 
 

@@ -13,6 +13,8 @@ input [15:0]shape_mask,
 input [2:0]next_type,
 input [15:0]next_mask,
 input [19:0]flash_rows,
+input [4:0]ghost_y,
+input ghost_on,
 input [15:0]score,
 input [2:0]level,
 input [6:0]lines,
@@ -48,6 +50,12 @@ output reg[3:0]color_idx
     assign inbox=(drow<=6'd3)&&(dcol<=6'd3);
     assign hit_piece=inbox && shape_mask[{drow[1:0],dcol[1:0]}];
 
+    wire [5:0]drow_ghost,dcol_ghost;
+    assign drow_ghost={1'b0,row_idx}-{1'b0,ghost_y};
+    wire ghost_inbox;
+    assign ghost_inbox=(drow_ghost<=6'd3)&&(dcol<=6'd3);
+    wire hit_ghost=ghost_on && inbox && shape_mask[{drow_ghost[1:0],dcol[1:0]}];
+
     wire [3:0]color_idx_panel;
     panel panel (
         .px_log         (px_log),
@@ -68,6 +76,8 @@ output reg[3:0]color_idx
                 color_idx = p_type +4'h2;
             end else if(occ)begin
                 color_idx = cell_type + 4'h2;
+            end else if(hit_ghost)begin
+                color_idx = 4'hA;
             end else if(grid)begin
                 color_idx= 4'h1;
             end else begin
