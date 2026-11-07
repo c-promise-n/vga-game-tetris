@@ -14,7 +14,7 @@ input [4:0]row_idx,
 output [9:0]occ_row,
 output [29:0]type_row,
 
-output reg [2:0]p_type,
+(*max_fanout=8*)output reg [2:0]p_type,
 output reg [1:0]p_rot,
 output reg [4:0]p_x,
 output reg [4:0]p_y,
