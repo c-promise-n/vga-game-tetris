@@ -92,7 +92,7 @@
 
 ## 如何打开 / 重建工程
 
-推荐不提交 `work/` 与 `.xpr`，用脚本从源码重建：
+本仓库不提交 `work/` 与 `.xpr`，用脚本从源码重建：
 
 ```bash
 vivado -mode batch -source scripts/recreate.tcl
