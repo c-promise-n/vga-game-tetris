@@ -91,20 +91,37 @@
 | 片上功耗 | 0.128 W（Dynamic 0.056 W + Static 0.072 W） |
 
 ## 如何打开 / 重建工程
-手动新建工程：选 `xc7a35tcpg236-1`，把 `src/*.v` 加入 Design Sources、
+
+推荐不提交 `work/` 与 `.xpr`，用脚本从源码重建：
+
+```bash
+vivado -mode batch -source scripts/recreate.tcl
+```
+
+或在 Vivado Tcl Console 中：
+
+```tcl
+source scripts/recreate.tcl
+```
+
+脚本会按 `src/`、`tb/`、`constrs/` 重建工程并设好顶层（`top_tetris`）与仿真顶层
+（`tb_tetris_core`），生成在 `work/vga_game_tetris/`。
+
+也可以手动新建工程：选 `xc7a35tcpg236-1`，把 `src/*.v` 加入 Design Sources、
 `constrs/basys3_top.xdc` 加入 Constraints、`tb/*.v` 加入 Simulation Sources，
 顶层设为 `top_tetris`。
 
-## 文档
+## 文档与演示视频
 
-- 实验报告：`doc/实验报告—基于Basys3的VGA俄罗斯方块.md`（含设计、验证、时序收敛与上板记录）
+- 实验报告：`doc/实验报告—基于Basys3的VGA俄罗斯方块.md`（设计、验证、时序收敛与上板记录）
 - 报告图片：`doc/img/`
+- 演示视频：<https://www.bilibili.com/video/BV1uUW166EkE>
 
 ## 下载
 
 - 源码：`git clone https://github.com/c-promise-n/vga-game-tetris.git`
-- 完整 Vivado 工程（含 `.xpr` 与本地生成的 `work/`）：见仓库 **Releases** 页的 zip 附件；
-
+- 完整 Vivado 工程（含 `.xpr` 与本地生成的 `work/`）：见仓库 **Releases** 页的两个 zip 附件；
+  也可以只用源码 + `scripts/recreate.tcl` 在本机重建工程。
 
 ## 已知限制
 
@@ -112,6 +129,14 @@
 - 无 HOLD、无第二个 NEXT 预览、无音效
 - 时序余量偏薄（Setup +0.021 ns），再改 RTL 需要重新收敛
 
+## License
+
+- **代码**（`src/`、`tb/`、`constrs/`、`scripts/`）：MIT License，Copyright © 2026 c-promise-n，
+  可自由复用、修改、再发布，请保留版权声明。
+- **实验报告与图片**（`doc/`）：版权保留，仅供学习交流，引用请注明出处；
+  未经许可请勿直接用于课程作业提交或商业用途。
+
+详见仓库根目录的 `LICENSE` 文件。
 
 ---
 
@@ -120,4 +145,7 @@
 A from-scratch VGA Tetris on Digilent Basys3 (Artix-7 XC7A35T), written in plain Verilog
 without any IP. 640×480@60 Hz VGA, 7-bag randomizer, rotation, soft/hard drop, ghost piece,
 line clear, scoring/levels, NEXT preview, on-board buttons and 7-segment score display.
-13 self-checking testbenches pass on Vivado 2019.1.
+13 self-checking testbenches pass on Vivado 2019.1. Rebuild the project with
+`source scripts/recreate.tcl`. Demo: <https://www.bilibili.com/video/BV1uUW166EkE>
+
+The source code is released under the MIT License (see `LICENSE`); the report and images under `doc/` remain all rights reserved and are for reference only.

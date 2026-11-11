@@ -7,6 +7,8 @@
 | 开发工具 | Vivado 2019.1 |
 | 开发板 | Digilent Basys3（Artix-7 XC7A35T-1CPG236C） |
 | 工程 | `vga_game_tetris.xpr` |
+|GitHub仓库|https://github.com/c-promise-n/vga-game-tetris.git|
+|演示视频|https://www.bilibili.com/video/BV1uUW166EkE?t=27.0|
 
 ## 一、实验内容
 ### 1.1 实验要求
