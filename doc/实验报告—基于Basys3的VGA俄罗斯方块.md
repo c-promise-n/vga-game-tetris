@@ -43,7 +43,48 @@
 
 整机按"谁产生节拍 / 谁决定内容 / 谁负责画"分成三层，每层只依赖下一层的输出，不反向依赖，结构如图 1 所示。
 
-![图 1 系统顶层框图](img/fig1_arch.png)
+```mermaid
+flowchart LR
+    BTN["按键 ×5 / 拨码 ×3"]
+
+    subgraph TIME["时序层"]
+        VGA["vga_timing"]
+    end
+
+    subgraph LOGIC["逻辑层"]
+        IS["input_subsystem"]
+        PR["piece_random"]
+        SH["shape_rom"]
+        CORE["tetris_core"]
+    end
+
+    subgraph DISPLAY["显示层"]
+        CM["cell_map"]
+        RD["render"]
+        PN["panel"]
+        FL["fontlay"]
+        FR["font_rom"]
+        VP["video_pipe"]
+    end
+
+    BTN --> IS
+    IS --> CORE
+    PR --> CORE
+    SH --> CORE
+    VGA --> CORE
+    VGA --> CM
+    VGA --> VP
+    CM --> RD
+    CM --> PN
+    CORE --> RD
+    CORE --> PN
+    CORE --> FL
+    FR --> PN
+    FR --> FL
+    RD --> VP
+    FL --> VP
+    VP --> OUT["vga_r/g/b<br/>vga_hs / vga_vs"]
+```
 
 
 **图 1　系统顶层框图**
@@ -90,7 +131,15 @@
 
 整机有三个独立的状态机，它们不是并列的，而是串联驱动的关系，如图 2。
 
-![图 2 三个状态机的驱动关系](img/fig2_fsm_drive.png)
+```mermaid
+flowchart LR
+    S1["会话状态机<br/>IDLE / PLAY / PAUSE / OVER"]
+    S2["相位状态机<br/>FALL / TOUCH / DROP / LOCK / WRITE / SETTLE"]
+    S3["消行状态机<br/>IDLE / FLASH / COLL / FILL"]
+    S1 -- "cur_state == PLAY" --> S2
+    S2 -- "phase == P_SETTLE<br/>且存在满行" --> S3
+    S3 -- "lc_done" --> S2
+```
 
 
 **图 2　三个状态机的驱动关系**
@@ -132,7 +181,15 @@ always @(*) begin
 end
 ```
 
-![图 3 会话状态机](img/fig3_session_fsm.png)
+```mermaid
+stateDiagram-v2
+    [*] --> IDLE
+    IDLE --> PLAY : do_start
+    PLAY --> PAUSE : pause_level
+    PLAY --> OVER : game_over
+    PAUSE --> PLAY : !pause_level
+    OVER --> PLAY : restart_now
+```
 
 
 **图 3　会话状态机**
@@ -149,7 +206,21 @@ end
 暂停输入取电平、方向键取单拍脉冲，两者的区分见表 13；PAUSE 的出口条件是 `!pause_level`。这两处判断的理由见 3.4。
 #### 2.1.2 相位状态机
 
-![图 4 相位状态机](img/fig4_phase_fsm.png)
+```mermaid
+stateDiagram-v2
+    [*] --> P_FALL
+    P_FALL --> P_FALL : 重力计数到 / 软降
+    P_FALL --> P_TOUCH : landed
+    P_FALL --> P_DROP : drop（硬降）
+    P_DROP --> P_DROP : 下一格无碰撞
+    P_DROP --> P_LOCK : 下一格碰撞
+    P_TOUCH --> P_FALL : !landed
+    P_TOUCH --> P_LOCK : lock_cnt 到 30 帧
+    P_LOCK --> P_WRITE : 1 拍
+    P_WRITE --> P_SETTLE : 1 拍
+    P_SETTLE --> P_FALL : 无满行，do_spawn
+    P_SETTLE --> P_FALL : lc_done，do_spawn
+```
 
 
 **图 4　相位状态机**
@@ -166,7 +237,14 @@ end
 | `P_SETTLE` | 等消行完成 | 检查满行，决定启动消行还是生成新方块 | `lc_state==L_IDLE && !lc_issued` |
 #### 2.1.3 消行状态机
 
-![图 5 消行状态机](img/fig5_line_clear_fsm.png)
+```mermaid
+stateDiagram-v2
+    [*] --> L_IDLE
+    L_IDLE --> L_FLASH : lc_start 且存在满行
+    L_FLASH --> L_COLL : flash_cnt 到 6 帧
+    L_COLL --> L_FILL : rp 到 0
+    L_FILL --> L_IDLE : wp 到 0
+```
 
 
 **图 5　消行状态机**
@@ -1057,26 +1135,6 @@ VCD 后绘制：
 
 三个波形 TB 只负责导出 VCD，不参与断言：`tb_wave_vga`（图 7）、`tb_wave_render`（图 9）、`tb_wave_tetris_core`（图 11）。波形由 VCD 解析后绘制成 PNG，不依赖 Vivado GUI 截图。
 
-**寄存器版本写法（Vivado 2019.1 的一个坑）。** 本机 2019.1 的 xsim 在读回 `integer`
-类型的循环变量时会得到 X，连 `$display` 和数组索引都会受影响：
-
-```verilog
-integer i;
-for (i = 0; i < 8; i = i + 1)
-    $display("i = %0d", i);     // 2019.1 上打印出 i = x
-```
-
-因此这些 testbench 统一改成"寄存器版本"：循环变量与计数器全部用向量声明，逻辑不变：
-
-```verilog
-reg [3:0]  rw;      // 0..7 的行循环
-reg [31:0] errors;  // 计数器
-for (rw = 4'd0; rw < 4'd8; rw = rw + 4'd1) begin
-    ...             // 2019.1 / 2020.2 均正常
-end
-```
-
-
 **表 22　testbench 与实测结果（Vivado 2019.1）**
 
 | testbench | 结果 | 检查数 | 说明 |
@@ -1233,11 +1291,11 @@ VGA 的 12 位色是每色 4 位，而不是常见的 3-3-2，因为 Basys3 的 
 
 ![图 14c GAME OVER](img/fig14_gameover.png)
 
-*图 14　上板运行实拍（采集卡截图）：START / 正常游戏 / GAME OVER。*
+*图 14　上板运行实拍（OBS  截图）：START / 正常游戏 / GAME OVER。*
 
-演示视频从开发板上电开始录制（拨动开关从 off 到 on），同时展示屏幕与开发板，并配上语音或字幕讲解。录制流程为：上电 → 显示 START → 开始 → 移动/旋转/软降/硬降 → 消行（含 1 行与多行）→ 暂停/继续 → 堆到顶 GAME OVER → 重开。
 
-> 演示视频地址：【待填】
+
+> 演示视频地址：https://www.bilibili.com/video/BV1uUW166EkE?t=27.0
 
 ## 六、实验心得
 
@@ -1366,11 +1424,13 @@ vga-game-tetris-ps-2/
 │   └── tb_shape_rom.v                 28 个掩码点阵打印（图 8）
 ├── constrs/
 │   └── basys3_top.xdc                 引脚与时钟约束（64 个端口）
-├── sim/  ip/  doc/                    占位目录
+├──doc/
+    └── 实验报告—基于Basys3的VGA俄罗斯方块.pdf
+    └── 用户手册.pdf
+    └──img/
 └── README.md
 ```
 
-三点说明：`tb/` 最终为 13 个 testbench，两个失效的（`pixel_pipe_tb.v` 与 `ps2_rx_tb.v`）提交前已删除；所有源文件的注释均为纯 ASCII，因为 Vivado 在中文 Windows 下的默认编码会把中文注释显示成乱码；新补的 testbench 统一为 `tb_xxx` 命名，原有的 `xxx_tb` 保留。
 
 ### 附录 B　引脚分配全表（64 个端口）
 
