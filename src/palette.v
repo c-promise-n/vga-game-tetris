@@ -16,7 +16,7 @@ module palette(
         4'h7:rgb={{4'h3},{4'h7},{4'hF}};//blue:J
         4'h8:rgb={{4'hF},{4'h9},{4'h1}};//orange:L
         4'h9:rgb={{4'hF},{4'hF},{4'hF}};//white
-        4'hA:rgb={{4'h4},{4'h4},{4'h8}};//landing ghost
+        4'hA:rgb={{4'h0},{4'h0},{4'h3}};//landing ghost
         4'hB:rgb={{4'h1},{4'h5},{4'h9}};//incell highlight
         4'hC:rgb={{4'hF},{4'hF},{4'hB}};//line-clear flash
         4'hD:rgb={{4'h6},{4'h6},{4'hA}};//border

@@ -33,20 +33,20 @@ module palette_tb;
     end
 
     initial begin
-        exp[0]  = 12'h002;
-        exp[1]  = 12'h113;
-        exp[2]  = 12'h0EE;
-        exp[3]  = 12'hFE0;
-        exp[4]  = 12'hC0E;
-        exp[5]  = 12'h0E0;
-        exp[6]  = 12'hF00;
-        exp[7]  = 12'h02F;
-        exp[8]  = 12'hF70;
+        exp[0]  = 12'h112;
+        exp[1]  = 12'h336;
+        exp[2]  = 12'h0DD;
+        exp[3]  = 12'hFD3;
+        exp[4]  = 12'hA4E;
+        exp[5]  = 12'h3D7;
+        exp[6]  = 12'hF45;
+        exp[7]  = 12'h37F;
+        exp[8]  = 12'hF91;
         exp[9]  = 12'hFFF;
-        exp[10] = 12'h446;
-        exp[11] = 12'h005;
-        exp[12] = 12'hFFF;
-        exp[13] = 12'h88A;
+        exp[10] = 12'h003;
+        exp[11] = 12'h159;
+        exp[12] = 12'hFFB;
+        exp[13] = 12'h66A;
         exp[14] = 12'h002;
         exp[15] = 12'h000;
 
